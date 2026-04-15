@@ -1,6 +1,6 @@
-"""Gemma 4-powered flight analysis agent (hosted via Google AI API)."""
+"""Gemma-powered flight analysis agent (local via Ollama)."""
 
-from google import genai
+from ollama import Client
 
 
 SYSTEM_PROMPT = """\
@@ -16,25 +16,26 @@ For each recommendation, consider:
 - Airline reputation and comfort
 - Convenience of departure airport (Stansted/Luton are closest to the traveller)
 
+Note: prices shown are total round-trip for 2 passengers. Only outbound-leg \
+details (duration, stops, airline) are available; return-leg details are not \
+exposed by the data source.
+
 Present each recommendation in this format:
 
 ### Option N: [Brief description]
-- **Price**: total for 2 pax
-- **Route (Outbound)**: Airport → Stops → SXR
-- **Route (Return)**: SXR → Stops → Airport
-- **Departure**: date | **Return**: date
-- **Airlines**: list
-- **Outbound duration**: Xh | **Return duration**: Xh
-- **Stops**: outbound X, return X
+- **Price**: total round-trip for 2 pax
+- **Departure**: date from {origin airport} | **Return**: date
+- **Outbound airline**: name
+- **Outbound duration**: Xh | **Stops (outbound)**: X
 - **Why this option**: 1-2 sentence explanation
-- **Book here**: [booking link]
+- **Search on Google Flights**: [booking link]
 
 After the 5 options, add a brief **Summary** comparing them and a final recommendation.\
 """
 
 
-def analyze_flights(api_key, flights, top_n=30):
-    """Send top flight results to Gemini for analysis and recommendations."""
+def analyze_flights(flights, top_n=30, model="gemma4:31b", host="http://localhost:11434"):
+    """Send top flight results to a local Gemma model via Ollama for analysis."""
     if not flights:
         return "No flights found to analyze."
 
@@ -44,17 +45,22 @@ def analyze_flights(api_key, flights, top_n=30):
     # Build flight data text
     flight_text = _format_flights_for_prompt(candidates)
 
-    client = genai.Client(api_key=api_key)
-    response = client.models.generate_content(
-        model="gemma-4-31b-it",
-        contents=f"Here are {len(candidates)} flight options. Analyze and recommend the top 5:\n\n{flight_text}",
-        config=genai.types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-            max_output_tokens=4096,
-            temperature=0.3,
-        ),
+    client = Client(host=host)
+    response = client.chat(
+        model=model,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {
+                "role": "user",
+                "content": (
+                    f"Here are {len(candidates)} flight options. "
+                    f"Analyze and recommend the top 5:\n\n{flight_text}"
+                ),
+            },
+        ],
+        options={"temperature": 0.3, "num_predict": 4096},
     )
-    return response.text
+    return response["message"]["content"]
 
 
 def _format_flights_for_prompt(flights):

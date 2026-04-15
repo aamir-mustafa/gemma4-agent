@@ -11,18 +11,20 @@ ORIGIN_AIRPORTS = [
 
 DESTINATION = "SXR"  # Srinagar, India
 
-# Travel dates (dd/mm/YYYY format for Kiwi API)
-DEPARTURE_DATE_FROM = "20/04/2026"
-DEPARTURE_DATE_TO = "31/05/2026"
+# Travel dates (YYYY-MM-DD)
+DEPARTURE_DATE_FROM = "2026-04-20"
+DEPARTURE_DATE_TO = "2026-05-31"
 
-# Return window: 14-28 days after departure
-NIGHTS_IN_DST_FROM = 14
-NIGHTS_IN_DST_TO = 28
+# Google Flights is queried once per (departure, return) date pair, so we sample:
+#   - every DEPARTURE_STEP_DAYS across the departure window
+#   - trying each of RETURN_NIGHT_OPTIONS as the trip length
+# Total queries per run = ceil(window/step) * len(night_options) * len(airports)
+DEPARTURE_STEP_DAYS = 7
+RETURN_NIGHT_OPTIONS = [14, 21, 28]
 
 # Passengers
 ADULTS = 2
 
 # Search preferences
-CURRENCY = "GBP"
-MAX_STOPOVERS = 2
-RESULTS_PER_AIRPORT = 20  # Top results per origin airport
+# (Currency follows Google Flights' IP-based locale — GBP for UK users.)
+MAX_STOPOVERS = 2  # applied to outbound leg only (return-leg stops not exposed)
