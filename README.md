@@ -15,6 +15,7 @@ A Python-based AI agent that finds the cheapest return flights from airports nea
 
 - Python 3.10+
 - [Ollama](https://ollama.com) installed locally to run Gemma
+- [Playwright](https://playwright.dev/python/) + Chromium (used to drive Google Flights through the GDPR consent wall — `pip install` handles the library, a one-time `playwright install chromium` downloads the browser)
 
 ## Setup
 
@@ -25,9 +26,10 @@ A Python-based AI agent that finds the cheapest return flights from airports nea
    ollama pull gemma4:31b       # or gemma4:26b (MoE) / gemma4:e4b / gemma4:e2b for smaller models
    ```
 
-2. **Install Python dependencies:**
+2. **Install Python dependencies and the Playwright browser:**
    ```bash
    pip install -r requirements.txt
+   playwright install chromium        # one-time ~200 MB download
    ```
 
 3. **(Optional) `.env` file for Ollama overrides:**
@@ -58,7 +60,7 @@ Edit `config.py` to change search parameters:
 | `ADULTS` | 2 | Number of passengers |
 | `MAX_STOPOVERS` | 2 | Maximum outbound-leg layovers (return-leg stops not exposed by the scraper) |
 
-> **Scrape volume:** total queries per run = `ceil(window ÷ step) × len(night_options) × len(airports)`. Defaults: 7 × 3 × 5 = **105 queries** at a 2s delay each ≈ 3.5 minutes per run. Keep the delay generous — Google will IP-block aggressive scrapers.
+> **Scrape volume:** total queries per run = `ceil(window ÷ step) × len(night_options) × len(airports)`. Defaults: 6 × 3 × 5 = **90 queries** × ~3 s each (Playwright) ≈ **5-6 minutes per run**. Lower the counts above if you want it faster.
 
 ## Project Structure
 
@@ -87,7 +89,7 @@ agents/
 
 - There are no direct flights from the UK to Srinagar. All routes connect via Delhi, Mumbai, or Gulf hubs (Dubai, Doha).
 - May is peak tourist season for Kashmir -- book early for better prices.
-- **Scraper caveats:** Google Flights has no official public API; `fast-flights` reverse-engineers their internal URL format. It can break without warning if Google changes their site, and hitting it too aggressively may get your IP rate-limited. The default 2s inter-call delay is conservative; don't reduce it. For personal use only — Google's ToS doesn't allow commercial scraping.
+- **Scraper caveats:** Google Flights has no official public API; `fast-flights` reverse-engineers their internal URL format via a headless Chromium browser. It can break without warning if Google changes their site. For personal use only — Google's ToS doesn't allow commercial scraping.
 - **Data limitation:** Google Flights' round-trip response exposes only outbound-leg details (duration, stops, airline). Return-leg details aren't available, so the agent's prompt is scoped to outbound-only detail with a total round-trip price.
 - Each recommendation includes a Google Flights search URL — click through to book on an airline or OTA.
 - The Gemma model runs locally via Ollama. The `gemma4:31b` dense variant needs ~20GB RAM; use `gemma4:26b` (MoE, ~18GB), `gemma4:e4b` (~9.6GB), or `gemma4:e2b` (~7.2GB) on smaller machines.

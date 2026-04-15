@@ -31,6 +31,7 @@ def main():
         night_options=config.RETURN_NIGHT_OPTIONS,
         adults=config.ADULTS,
         max_stopovers=config.MAX_STOPOVERS,
+        cache_path=".flight_cache.jsonl",
     )
 
     if not flights:

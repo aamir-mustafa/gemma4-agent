@@ -2,3 +2,4 @@ requests
 python-dotenv
 ollama
 fast-flights
+playwright
