@@ -1,12 +1,12 @@
 """Search parameters for the flight booking agent."""
 
-# Airports near St Neots, Cambridgeshire (sorted by proximity)
+# Airports near St Neots that actually have SXR connections.
+# STN, LTN, BHX are low-cost-carrier airports with almost no SXR availability —
+# every UK→SXR route connects via DEL/BOM/DXB/DOH, and only LHR/LGW run the
+# necessary long-haul feeders.
 ORIGIN_AIRPORTS = [
-    "STN",  # London Stansted (~30 miles)
-    "LTN",  # London Luton (~30 miles)
     "LHR",  # London Heathrow (~65 miles)
     "LGW",  # London Gatwick (~75 miles)
-    "BHX",  # Birmingham (~80 miles)
 ]
 
 DESTINATION = "SXR"  # Srinagar, India

@@ -10,23 +10,26 @@ return flights from the UK to Srinagar (SXR), India.
 Analyze the flight options provided and recommend the **top 5 best-value** options.
 
 For each recommendation, consider:
-- Total price for 2 passengers
+- Total price for 2 passengers (outbound + return combined)
 - Total travel time (outbound + return)
-- Number of stops and layover quality
+- Number of stops on each leg
 - Airline reputation and comfort
-- Convenience of departure airport (Stansted/Luton are closest to the traveller)
+- Convenience of the London airport (LHR has more daily long-haul options than LGW)
 
-Note: prices shown are total round-trip for 2 passengers. Only outbound-leg \
-details (duration, stops, airline) are available; return-leg details are not \
-exposed by the data source.
+Important context on the data:
+- Each option's price is the sum of the cheapest one-way outbound + cheapest \
+one-way return for the given date pair. Users will book these as two separate \
+tickets since single-ticket round-trip fares rarely exist for UK↔SXR.
+- All routes connect via a hub (most commonly Delhi — DEL), so "1 stop" means \
+the connecting layover.
 
 Present each recommendation in this format:
 
 ### Option N: [Brief description]
-- **Price**: total round-trip for 2 pax
+- **Price**: total (outbound + return) for 2 pax
 - **Departure**: date from {origin airport} | **Return**: date
-- **Outbound airline**: name
-- **Outbound duration**: Xh | **Stops (outbound)**: X
+- **Outbound**: airline, Xh, X stops
+- **Return**: airline, Xh, X stops
 - **Why this option**: 1-2 sentence explanation
 - **Search on Google Flights**: [booking link]
 
